@@ -11,15 +11,23 @@ import { AuthProvider } from "../Providers/auth";
 
 const Routes = () => {
   return (
-    // <AuthProvider>
+    <>
+      <AuthProvider>
+        <RoutesApp >
+          <Route path="/" element={<Login />} />
+          <Route path="login" element={<Login />} />
+          <Route path="home" element={<Home />} />
+          <Route path="calc-imc" element={<Imc />} />
+
+          {/* <Route path="register-user" element={<RegisterUser />} /> */}
+        </RoutesApp>
+      </AuthProvider>
+
       <RoutesApp >
-        <Route path="/" element={<Login />}/>
-        <Route path="login" element={<Login />} />
-        <Route path="home" element={<Home />} />
         <Route path="register-user" element={<RegisterUser />} />
-        <Route path="calc-imc" element={<Imc />} />
       </RoutesApp>
-    // </AuthProvider>
+    </>
+
   )
 }
 

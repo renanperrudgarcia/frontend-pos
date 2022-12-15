@@ -10,6 +10,7 @@ export type User = {
   senha?: string
   access_token?: string
   expires_in?: number
+  tipoUsuario?: number
 }
 
 export type UserPayload = {
@@ -35,19 +36,31 @@ type TypeUser = {
 }
 
 type UserResponse = {
-  status: number
-  data: User
+  status?: number | string
+  data?: any[] | any
+  error?: any
 }
 
-// export const getUsers = async () => {
-//   const { data, status } = await api.get('users')
-//   return status === 200 ? data : []
-// }
+type UserByTypeResponse = {
+  status?: number | string
+  data?: User[] 
+}
+
 
 export const postUsers = async (payload: UserPayload): Promise<UserResponse> => {
-  const { data, status } = await api.post('user', payload)
+  try {
+    const { data, status } = await api.post('user', payload)
+    return { status, data }
 
-  return { status, data }
+  } catch (error) {
+
+    return { error: error.response.data.message, status: error.response.status }
+  }
+}
+
+export const getUserByTypeUser = async (type: number): Promise<UserByTypeResponse|any> => {
+  const { data, status } = await api.get<User[]>(`user/${type}`)
+  return status === 200 ? data : []
 }
 
 export const getTypeUser = async (): Promise<TypeUser[]> => {

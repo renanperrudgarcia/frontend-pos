@@ -9,7 +9,7 @@ import { InputForm } from '../../components/InputForm'
 
 
 export function Login() {
-  // const { signin } = useAuth()
+  const { signin } = useAuth()
   const [formValues, setFormValues] = useState<LoginPayload>()
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const toggleShowPassword = () => setShowPassword(!showPassword)
@@ -29,16 +29,15 @@ export function Login() {
     if (!formValues)
       return
 
-    const { data } = await loginUser({ payload: formValues })
+    const { data: { data } } = await loginUser(formValues)
 
-    if (data.access_token) {
+    if (data?.access_token) {
       const { status: meStatus, data: meData } = await getMe(data.access_token)
 
       if (meStatus === 200)
-        console.log('a')
-      // signin({ ...data, ...meData }, () => {
-      //   navigate("/home");
-      // })
+        signin({ ...data, ...meData }, () => {
+          navigate("/home");
+        })
     } else
       notify()
   }
@@ -46,7 +45,7 @@ export function Login() {
   const handleSetFormValues = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target
 
-    setFormValues((prevFormValues): { user?: string; password?: string } => ({ ...prevFormValues, [name]: value }))
+    setFormValues((prevFormValues): { user: string; password: string } => ({ ...prevFormValues, [name]: value }))
   }
 
   return (

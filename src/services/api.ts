@@ -5,5 +5,6 @@ export const api = axios.create({
   headers: {
     accept: 'application/json',
     'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
   },
 })

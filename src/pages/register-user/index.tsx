@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Button, Container, Flex, Text } from '@chakra-ui/react'
-import { getTypeUser, postUsers, User, UserPayload } from '../../services/get-users'
-import { validateEmail } from '../../utils/misc'
+import { useState } from 'react'
+import { Button, Container, Flex, Text, useToast } from '@chakra-ui/react'
+import { postUsers, User, UserPayload } from '../../services/get-users'
 import { InputForm } from '../../components/InputForm'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { UsersTypes } from '../../utils/constants'
 
 type formDataCreateUser = {
   user: UserPayload
@@ -23,18 +23,8 @@ export type FormError = {
 export const RegisterUser = () => {
   // const history = useHistory()
   const [formValues, setFormValues] = useState<formDataCreateUser>()
-
-  const [nameIsError, setNameIsError] = useState<string | null>()
-  const [emailIsError, setEmailIsError] = useState<string | null>()
-  const [passwordIsError, setPasswordIsError] = useState<string | null>()
-  const [typeUserIdIsError, setTypeUserIdIsError] = useState<string | null>()
-  const [typesUserOptions, setTypesUserOptions] = useState<SelectOptions[]>([])
-
-  const fetchTypeUser = async () => {
-    const data = await getTypeUser()
-
-    setTypesUserOptions(data.map(typeUser => ({ value: typeUser.id, label: typeUser.nome })))
-  }
+  const navigate = useNavigate();
+  const toast = useToast()
 
   const handleInputChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
@@ -43,20 +33,38 @@ export const RegisterUser = () => {
     const type = name.split('.')[0]
     const attribute = name.split('.')[1]
 
-    // setFormValues({ ...formValues, [type]: { ...formValues?.[type], [attribute]: valueForm } })
+    setFormValues({ ...formValues, [type]: { ...formValues?.[type], [attribute]: valueForm } })
   }
 
   const handleSubmit = async () => {
-    // const userPayload = formValues.user as User 
+    const userPayload = formValues.user as UserPayload
+    userPayload.type_user = UsersTypes.STUDENT
 
-    // postUsers({ ...userPayload }).then(function ({ status }) {
-    // status === 201
-    // })
+    const { data, status, error } = await postUsers(userPayload)
+
+    console.log(data)
+    if (status === 400) {
+      toast({
+        position: 'top',
+        title: 'Atenção!',
+        description: error,
+        status: 'error',
+        duration: 2000,
+        isClosable: true,
+      })
+
+    } else {
+      toast({
+        position: 'top',
+        description: "Usuário cadastrado com sucesso!",
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      })
+
+      navigate("/login");
+    }
   }
-
-  useEffect(() => {
-    fetchTypeUser()
-  }, [])
 
   return (
     <Container mt={50}>
@@ -82,7 +90,6 @@ export const RegisterUser = () => {
 
       <InputForm
         label='Usuário'
-        type="password"
         name="user.user"
         value={formValues?.user?.user || ''}
         onChange={handleInputChange}
@@ -102,7 +109,7 @@ export const RegisterUser = () => {
         isRequired
       />
 
-      <div
+      {/* <div
         style={{
           display: 'flex',
           flex: 1,
@@ -136,7 +143,7 @@ export const RegisterUser = () => {
               </option>
             ))}
         </select>
-      </div>
+      </div> */}
 
       <Flex alignItems="center" justifyContent="space-between" >
         <Link to="/login">
