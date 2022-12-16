@@ -10,13 +10,13 @@ export const withAuth = <P extends object>(
     return (props: P) => {
         const navigate = useNavigate()
         const { user } = useAuth()
-        // console.log(1, { user })
-        // if (!user.access_token) {
-        //     console.log('AEFADSASF')
-        //     navigate('/login')
-        //     return
-        // }
-        // console.log(2, { user })
+        console.log(1, { user })
+        if (!user.access_token) {
+            console.log('AEFADSASF')
+            navigate('/login')
+            return
+        }
+        console.log(2, { user })
         useEffect(() => {
             if (!user.access_token) {
                 console.log(3, { user })
