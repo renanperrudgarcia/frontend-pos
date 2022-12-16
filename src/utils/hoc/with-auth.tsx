@@ -29,7 +29,7 @@ export const withAuth = <P extends object>(
                 return
             }
         }, [user])
-        // console.log(5, { user })
+        console.log(5, { user })
         // navigate(user.tipoUsuario === UsersTypes.STUDENT ? '/follow-up' : '/reports/student')
 
         return <Component {...props} />

@@ -25,6 +25,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const FollowUp = () => {
+    console.log('entrou aki')
     const { iduser } = useParams()
     const { user: loggedUser } = useAuth()
 

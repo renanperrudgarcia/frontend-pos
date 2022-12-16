@@ -9,6 +9,7 @@ import { BiSearch } from 'react-icons/bi'
 import { withAuth } from '../../utils/hoc/with-auth'
 
 const ReportUser = () => {
+    console.log('entrou aki report')
     const { type } = useParams()
 
     const [userPersonalOptions, setUserPersonalOptions] = useState<SelectOptionsUserType[]>([])
