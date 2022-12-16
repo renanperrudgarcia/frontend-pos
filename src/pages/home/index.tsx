@@ -9,7 +9,8 @@ const Home = () => {
   const { user } = useAuth()
 
   useLayoutEffect(() => {
-    console.log('aaaaaa')
+      console.log('aaaaaa')
+      console.log(user)
     navigate(user.tipo_usuario === UsersTypes.STUDENT ? '/follow-up/0' : '/reports/student')
   }, [user])
   
