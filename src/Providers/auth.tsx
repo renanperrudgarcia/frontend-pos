@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { createContext, useState } from "react";
-import { User } from "../services/get-users";
+import { User } from "../services/users";
 
 interface AuthContextType {
   user?: User;
@@ -11,7 +11,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>(null!);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User>({} as User);
 
   const signin = (newUser: User, callback: VoidFunction) => {
       setUser(newUser);

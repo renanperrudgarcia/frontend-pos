@@ -1,12 +1,10 @@
 import { Button, Container, Flex, Text, useToast } from '@chakra-ui/react'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../Providers/auth'
-import { getMe, LoginPayload, loginUser } from '../../services/user'
+import { getMe, LoginPayload, loginUser } from '../../services/user-login'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { InputForm } from '../../components/InputForm'
-
-
 
 export function Login() {
   const { signin } = useAuth()
@@ -32,14 +30,17 @@ export function Login() {
     const { data: { data } } = await loginUser(formValues)
 
     if (data?.access_token) {
-      const { status: meStatus, data: meData } = await getMe(data.access_token)
-
+      const { status: meStatus, data: { data: { userMe } } } = await getMe(data.access_token)
+      console.log({ data, userMe })
       if (meStatus === 200)
-        signin({ ...data, ...meData }, () => {
-          navigate("/home");
+        signin({ ...data, ...userMe }, () => {
+          navigate("/");
         })
-    } else
-      notify()
+
+      return
+    }
+
+    notify()
   }
 
   const handleSetFormValues = (e: { target: { name: string; value: string } }) => {
@@ -50,7 +51,7 @@ export function Login() {
 
   return (
     <Container mt={50}>
-      <Text mb="10" fontSize={40} color="yellow.500">Login</Text>
+      <Text mb="10" fontSize={40} color="purple">Login</Text>
 
       <InputForm
         label='Usuário'
@@ -72,11 +73,8 @@ export function Login() {
         rightElement={{ action: toggleShowPassword, element: showPassword ? <FaEyeSlash /> : <FaEye /> }}
       />
 
-      <Flex alignItems="center" justifyContent="space-between" >
-        <Link to="/register-user">
-          Cadastre-se
-        </Link>
-        <Button mt={4} onClick={handleLogin} width={40} backgroundColor="yellow.500"> Entrar </Button>
+      <Flex justifyContent="flex-end" mt={4} >
+        <Button onClick={handleLogin} width={40} backgroundColor="purple.300" color="white"> Entrar </Button>
       </Flex>
 
     </Container >

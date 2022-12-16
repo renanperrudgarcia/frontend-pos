@@ -15,8 +15,15 @@ export const MenuSimple = (): JSX.Element => {
         <Menu isLazy >
           <MenuButton mr={10} >Cadastrar</MenuButton>
           <MenuList>
-            <MenuItem>Aluno</MenuItem>
-            <MenuItem>Profissional</MenuItem>
+            <MenuItem>
+              <Link to="/calc-imc">IMC</Link>
+            </MenuItem>
+            <MenuItem>
+              <Link to="/register-student">Aluno</Link>
+            </MenuItem>
+            <MenuItem>
+              <Link to="/register-professional">Profissional</Link>
+            </MenuItem>
           </MenuList>
         </Menu>
 
@@ -34,10 +41,11 @@ export const MenuSimple = (): JSX.Element => {
             <DrawerCloseButton />
             <DrawerHeader>Gerar relatório</DrawerHeader>
             <DrawerBody>
-              <Text>Alunos</Text>
-              <Text>Profissionais</Text>
-              <Text>Evoluções</Text>
-              <Text>...</Text>
+              <Flex flexDirection='column'>
+                <Link to="/list-student">Alunos</Link>
+                <Link to="/list-professional">Profissionais</Link>
+                <Text>Evoluções</Text>
+              </Flex>
             </DrawerBody>
           </DrawerContent>
         </Drawer>

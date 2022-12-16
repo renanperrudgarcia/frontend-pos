@@ -1,10 +1,19 @@
-import { Box } from '@chakra-ui/react'
-import { MenuSimple } from '../../components/MenuSimple'
+import { useEffect, useLayoutEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../Providers/auth'
+import { UsersTypes } from '../../utils/constants'
+import { withAuth } from '../../utils/hoc/with-auth'
 
-export const Home = () => {
-  return (
-    <Box p="15px">
-      <MenuSimple />
-    </Box >
-  )
+const Home = () => {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+
+  useLayoutEffect(() => {
+    console.log('aaaaaa')
+    navigate(user.tipo_usuario === UsersTypes.STUDENT ? '/follow-up/0' : '/reports/student')
+  }, [user])
+  
+  return <></>
 }
+
+export default withAuth(Home, [UsersTypes.ALL])

@@ -4,11 +4,14 @@ import {
 } from "@chakra-ui/react"
 import Routes from "./routes"
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./Providers/auth";
 
 export const App = () => (
   <ChakraProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes />
-      </BrowserRouter>
+      </AuthProvider>
+    </BrowserRouter>
   </ChakraProvider>
 )

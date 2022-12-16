@@ -2,17 +2,18 @@ import { Button, CircularProgress, Container, Flex, Select, Text, useToast } fro
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { InputForm } from '../../components/InputForm'
-import { ImcPayload, postImc } from '../../services/get-imc'
-import { getUserByTypeUser } from '../../services/get-users'
+import { ImcPayload, postImc } from '../../services/imc'
+import { getUserByTypeUser } from '../../services/users'
 import { UsersTypes } from '../../utils/constants'
+import { withAuth } from '../../utils/hoc/with-auth'
 
 export type SelectOptionsUserType = {
   label: string
   value: number
 }
 
-export const Imc = () => {
-  const [formValues, setFormValues] = useState<ImcPayload>()
+const Imc = () => {
+  const [formValues, setFormValues] = useState<ImcPayload>({} as ImcPayload)
   const toast = useToast()
   const [userPersonalOptions, setUserPersonalOptions] = useState<SelectOptionsUserType[]>([])
   const [userStudentOptions, setUserStudentOptions] = useState<SelectOptionsUserType[]>([])
@@ -21,14 +22,11 @@ export const Imc = () => {
   const handleInputChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
 
-    const valueForm = value
-    const type = name.split('.')[0]
-    const attribute = name.split('.')[1]
-
-    setFormValues({ ...formValues, [type]: { ...formValues?.[type], [attribute]: valueForm } })
+    setFormValues({ ...formValues, [name]: value })
   }
-
+  console.log({ formValues })
   const handleSubmit = async () => {
+    if (!formValues.height) return
 
     const { data, status, error } = await postImc(formValues)
 
@@ -42,16 +40,17 @@ export const Imc = () => {
         duration: 2000,
         isClosable: true,
       })
-
-    } else {
-      toast({
-        position: 'top',
-        description: "Usuário cadastrado com sucesso!",
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-      })
+      return
     }
+
+    toast({
+      position: 'top',
+      description: "Usuário cadastrado com sucesso!",
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    })
+
   }
 
   const fetchUserStudent = async () => {
@@ -81,25 +80,29 @@ export const Imc = () => {
         <Flex alignItems="center"  >
           <Text>Aguardando carregamento...</Text>
           <CircularProgress isIndeterminate color='blue.300' ml={10} />
-        </Flex> :
+        </Flex>
+        :
         <>
-
           <InputForm
-            label='Altura em cm'
-            name=""
-            value=""
-            placeholder="Digite sua Altura"
+            label='Altura'
+            name="height"
+            type="number"
+            value={formValues.height || ''}
+            placeholder="Ex: 1.68"
             errorMessage="A altura é obrigatória"
             isRequired
+            onChange={handleInputChange}
           />
 
           <InputForm
             label='Peso em Kg'
-            name=""
-            value=""
+            name="weight"
+            type="number"
+            value={formValues.weight || ''}
             placeholder="Digite seu peso"
             errorMessage="O peso é obrigatório"
             isRequired
+            onChange={handleInputChange}
           />
 
           <Text fontSize={16} mb={4}>Aluno *</Text>
@@ -110,6 +113,9 @@ export const Imc = () => {
             rounded='md'
             bg='white'
             isRequired
+            name="id_student"
+            onChange={handleInputChange}
+            value={formValues.id_student || ''}
           >
             {userStudentOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -126,6 +132,9 @@ export const Imc = () => {
             rounded='md'
             bg='white'
             isRequired
+            name="id_professional"
+            onChange={handleInputChange}
+            value={formValues.id_professional || ''}
           >
             {userPersonalOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -136,12 +145,15 @@ export const Imc = () => {
 
 
           <Flex alignItems="center" justifyContent="space-between" >
-            <Link to="/home">
+            <Text onClick={() => window?.history?.back()} cursor="pointer">
               Voltar
-            </Link>
+            </Text>
             <Button mt={4} onClick={handleSubmit} width={40} backgroundColor="yellow.500"> Calcular </Button>
           </Flex>
-        </>}
+        </>
+      }
     </Container>
   )
 }
+
+export default withAuth(Imc, [UsersTypes.ADMIN, UsersTypes.PERSONAL])
