@@ -34,7 +34,7 @@ export function Login() {
       console.log({ data, userMe })
       if (meStatus === 200)
         signin({ ...data, ...userMe }, () => {
-          navigate("/");
+            window.location.href = "http://www.devmedia.com.br";
         })
 
       return
