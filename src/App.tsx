@@ -3,15 +3,15 @@ import {
   ChakraProvider
 } from "@chakra-ui/react"
 import Routes from "./routes"
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import { AuthProvider } from "./Providers/auth";
 
 export const App = () => (
   <ChakraProvider>
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <Routes />
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   </ChakraProvider>
 )
