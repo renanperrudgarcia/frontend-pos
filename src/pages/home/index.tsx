@@ -8,9 +8,9 @@ const Home = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  useLayoutEffect(() => {
+  useEffect(() => {
       console.log('aaaaaa')
-      console.log(user)
+      console.log('user home' ,user)
     navigate('/follow-up/0')
   }, [user])
   
