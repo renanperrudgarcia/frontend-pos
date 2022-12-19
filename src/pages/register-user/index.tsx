@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Container, Flex, Text, useToast } from '@chakra-ui/react'
-import { postUsers, UserPayload } from '../../services/users'
+import { getUserByTypeUser, postUsers, User, UserPayload } from '../../services/users'
 import { InputForm } from '../../components/InputForm'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { UsersTypes } from '../../utils/constants'
@@ -22,6 +22,10 @@ const RegisterUser = () => {
   const { type } = useParams()
 
   const [formValues, setFormValues] = useState<UserPayload>({} as UserPayload)
+  const [isEdit, setIsEdit] = useState<boolean>(false)
+
+  const userStorage = localStorage.getItem("user");
+  const user = JSON.parse(userStorage) as User;
 
   const toast = useToast({
     position: 'top',
@@ -38,7 +42,7 @@ const RegisterUser = () => {
   const handleSubmit = async () => {
     const userPayload = formValues
 
-    userPayload.type_user = type === 'student' ? UsersTypes.STUDENT : UsersTypes.PERSONAL
+    userPayload.type_user = type === 'student' || (isEdit && user.tipo_usuario !== UsersTypes.ADMIN) ? UsersTypes.STUDENT : UsersTypes.PERSONAL
 
     const { status, error } = await postUsers(userPayload)
 
@@ -52,16 +56,39 @@ const RegisterUser = () => {
     }
 
     toast({
-      description: "Usuário cadastrado com sucesso!",
+      description: `Usuário ${isEdit ? 'atualizado' : 'cadastrado'} com sucesso!`,
       status: 'success',
     })
 
     navigate("/");
   }
 
+  useEffect(() => {
+    const [, idUser] = type.split('-')
+
+    if (idUser) {
+      getUserToEdit(idUser)
+    }
+  }, [type])
+
+  const getUserToEdit = async (id: string) => {
+    const { data } = await getUserByTypeUser({ id })
+
+    if (data?.length) {
+      setFormValues({
+        name: data[0].nome,
+        user: data[0].usuario,
+        email: data[0].email,
+        password: data[0]?.senha,
+        type_user: data[0].tipoUsuario,
+      })
+      setIsEdit(true)
+    }
+  }
+
   return (
     <Container mt={50}>
-      <Text mb="10" fontSize={40} color="purple">Cadastrar {type === 'student' ? 'Aluno' : 'Profissional'} </Text>
+      <Text mb="10" fontSize={40} color="purple">{isEdit ? 'Atualizar' : 'Cadastrar'} {type === 'student' ? 'Aluno' : 'Profissional'} </Text>
 
       <InputForm
         label='Nome'
@@ -89,6 +116,7 @@ const RegisterUser = () => {
         placeholder="Digite seu usuário"
         errorMessage="O usuário é obrigatório"
         isRequired
+        isDisabled={isEdit}
       />
 
       <InputForm
@@ -107,7 +135,7 @@ const RegisterUser = () => {
           Voltar
         </Link>
 
-        <Button mt={4} onClick={handleSubmit} width={40} backgroundColor="purple.300">Cadastrar</Button>
+        <Button mt={4} onClick={handleSubmit} width={40} backgroundColor="purple.300">{isEdit ? 'Atualizar' : 'Cadastrar'}</Button>
       </Flex>
     </Container>
   )

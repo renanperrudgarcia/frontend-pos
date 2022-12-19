@@ -58,22 +58,20 @@ export const postUsers = async (
   }
 };
 
-export const getUserByTypeUser = async (
-  id?: number,
-  name?: string
-): Promise<UserByTypeResponse | any> => {
-  let params = { type_user: 0, name: "" };
-  if (id) {
-    params.type_user = id;
-  }
-  if (name) {
-    params.name = name;
-  }
+type GetUsersPayload = {
+  id?: number | string,
+  name?: string,
+  type_user?: number,
+}
 
-  const { data, status } = await api.get<User[]>("user", {
-    params: params,
-  });
+export const getUserByTypeUser = async (params: GetUsersPayload): Promise<UserByTypeResponse | any> => {
+  const { data, status } = await api.get<User[]>("user", { params });
   return status === 200 ? data : [];
+};
+
+export const removeUser = async (id: number): Promise<any> => {
+  const { data, status } = await api.delete<any>(`user/${id}`);
+  return { status, data }
 };
 
 export const getTypeUser = async (): Promise<TypeUser[]> => {

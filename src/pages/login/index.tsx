@@ -1,4 +1,4 @@
-import { Button, Container, Flex, Text, useToast } from '@chakra-ui/react'
+import { Button, CircularProgress, Container, Flex, Text, useToast } from '@chakra-ui/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../Providers/auth'
@@ -13,34 +13,50 @@ export function Login() {
   const toggleShowPassword = () => setShowPassword(!showPassword)
   const navigate = useNavigate();
   const toast = useToast()
-
-  const notify = () => toast({
-    position: 'top',
-    title: 'Atenção!',
-    description: "Credenciais Inválidas",
-    status: 'error',
-    duration: 2000,
-    isClosable: true,
-  })
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const handleLogin = async () => {
-    if (!formValues)
-      return
+    if (!formValues) return
 
-    const { data: { data } } = await loginUser(formValues)
+    setIsLoading(true)
 
-    if (data?.access_token) {
-      const { status: meStatus, data: { data: { userMe } } } = await getMe(data.access_token)
-      console.log({ data, userMe })
-      if (meStatus === 200)
-        signin({ ...data, ...userMe }, () => {
-          navigate("/");
+    const { data: dataLogin, error } = await loginUser(formValues)
+
+    if (dataLogin && dataLogin.data?.access_token) {
+      const { data } = dataLogin
+      const { status, data: dataMe } = await getMe(data.access_token)
+
+      setIsLoading(false)
+
+      if (status !== 200) {
+        toast({
+          position: 'top',
+          title: 'Atenção!',
+          description: error,
+          status: 'error',
+          duration: 2000,
+          isClosable: true,
         })
+      }
+      const { data: { userMe } } = dataMe
+
+      signin({ ...data, ...userMe }, () => {
+        navigate("/");
+      })
 
       return
     }
 
-    notify()
+    setIsLoading(false)
+
+    toast({
+      position: 'top',
+      title: 'Atenção!',
+      description: error,
+      status: 'error',
+      duration: 2000,
+      isClosable: true,
+    })
   }
 
   const handleSetFormValues = (e: { target: { name: string; value: string } }) => {
@@ -73,10 +89,18 @@ export function Login() {
         rightElement={{ action: toggleShowPassword, element: showPassword ? <FaEyeSlash /> : <FaEye /> }}
       />
 
-      <Flex justifyContent="flex-end" mt={4} >
-        <Button onClick={handleLogin} width={40} backgroundColor="purple.300" color="white"> Entrar </Button>
+      <Flex justifyContent="flex-end" mt={4}>
+        <Button isDisabled={isLoading} onClick={handleLogin} width={40} backgroundColor="purple.300" color="white">
+          {isLoading
+            ?
+            <Flex alignItems="center"  >
+              <CircularProgress isIndeterminate color='blue.300' size={5} />
+            </Flex>
+            :
+            "Entrar"
+          }
+        </Button>
       </Flex>
-
     </Container >
   )
 }

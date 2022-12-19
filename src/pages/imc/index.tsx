@@ -1,8 +1,9 @@
-import { Button, CircularProgress, Container, Flex, Select, Text, useToast } from '@chakra-ui/react'
+import { Button, CircularProgress, Container, Flex, Select, Text, useDisclosure, useToast } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { InputForm } from '../../components/InputForm'
+import { ModalEx } from '../../components/modal'
 import { useAuth } from '../../Providers/auth'
-import { ImcPayload, postImc } from '../../services/imc'
+import { Imc, ImcPayload, postImc } from '../../services/imc'
 import { getUserByTypeUser } from '../../services/users'
 import { UsersTypes } from '../../utils/constants'
 import { withAuth } from '../../utils/hoc/with-auth'
@@ -12,27 +13,39 @@ export type SelectOptionsUserType = {
   value: number
 }
 
-const Imc = () => {
-  const [formValues, setFormValues] = useState<ImcPayload>({} as ImcPayload)
+const ImcCalc = () => {
   const toast = useToast()
+  const { user: loggedUser } = useAuth()
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const [formValues, setFormValues] = useState<ImcPayload>({} as ImcPayload)
   const [userPersonalOptions, setUserPersonalOptions] = useState<SelectOptionsUserType[]>([])
   const [userStudentOptions, setUserStudentOptions] = useState<SelectOptionsUserType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { user: loggedUser } = useAuth()
+  const [imcData, setImcData] = useState<Imc | null>(null);
 
   const handleInputChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
 
     setFormValues({ ...formValues, [name]: value })
   }
-  console.log({ formValues })
   const handleSubmit = async () => {
-    if (!formValues.height) return
-
+    if (!formValues.height || !formValues.weight || !formValues.id_student || !formValues.id_professional) {
+      toast({
+        position: 'top',
+        title: 'Atenção!',
+        description: 'Dados inválidos!',
+        status: 'error',
+        duration: 2000,
+        isClosable: true,
+      })
+      return
+    }
+    setIsLoading(true)
     const { data, status, error } = await postImc(formValues)
 
-    console.log(data)
-    if (status === 400) {
+    setIsLoading(false)
+    if (status >= 400) {
       toast({
         position: 'top',
         title: 'Atenção!',
@@ -44,26 +57,25 @@ const Imc = () => {
       return
     }
 
-    toast({
-      position: 'top',
-      description: "Usuário cadastrado com sucesso!",
-      status: 'success',
-      duration: 2000,
-      isClosable: true,
-    })
+    setImcData(data.data)
+    onOpen()
+    clearForm()
+  }
 
+  const clearForm = () => {
+    setFormValues({})
   }
 
   const fetchUserStudent = async () => {
     setIsLoading(true)
-    const { data } = await getUserByTypeUser(UsersTypes.STUDENT)
+    const { data } = await getUserByTypeUser({ type_user: UsersTypes.STUDENT })
     setUserStudentOptions(data.map(user => ({ value: user.id, label: user.nome })))
     setIsLoading(false)
   }
 
   const fetchUserByTypeUserPersonal = async () => {
     setIsLoading(true)
-    const { data } = await getUserByTypeUser(UsersTypes.PERSONAL)
+    const { data } = await getUserByTypeUser({ type_user: UsersTypes.PERSONAL })
     setUserPersonalOptions(data.map(user => ({ value: user.id, label: user.nome })))
     setIsLoading(false)
   }
@@ -72,7 +84,7 @@ const Imc = () => {
     fetchUserStudent()
     fetchUserByTypeUserPersonal()
   }, [])
-  console.log(loggedUser)
+
   return (
     <Container mt={50}>
       <Text mb="10" fontSize={40} color="purple">Calcular IMC </Text>
@@ -125,9 +137,9 @@ const Imc = () => {
             ))}
           </Select>
 
-          <Text fontSize={16} mt={4} mb={4}>Profissional *</Text>
+          <Text fontSize={16} my={4}>Profissional *</Text>
           <Select
-            placeholder={loggedUser.tipo_usuario === UsersTypes.PERSONAL ? loggedUser.nome : "Selecione o Profissional"}
+            placeholder="Selecione o Profissional"
             errorBorderColor="O profissional é obrigatório"
             boxShadow='base'
             rounded='md'
@@ -136,10 +148,9 @@ const Imc = () => {
             name="id_professional"
             onChange={handleInputChange}
             value={(formValues.id_professional || '')}
-            // isDisabled={loggedUser.tipo_usuario === UsersTypes.PERSONAL}
             defaultValue={loggedUser.id}
           >
-            {userPersonalOptions.map(option => (
+            {userPersonalOptions.filter(option => loggedUser.tipo_usuario === UsersTypes.PERSONAL ? option.value === loggedUser.id : option).map(option => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -147,16 +158,26 @@ const Imc = () => {
           </Select>
 
 
-          <Flex alignItems="center" justifyContent="space-between" >
+          <Flex alignItems="center" justifyContent="space-between" mt={4}>
             <Text onClick={() => window?.history?.back()} cursor="pointer">
               Voltar
             </Text>
-            <Button mt={4} onClick={handleSubmit} width={40} backgroundColor="purple.300"> Calcular </Button>
+            <Button onClick={handleSubmit} width={40} backgroundColor="purple.300">Calcular</Button>
           </Flex>
         </>
       }
+
+      <ModalEx isOpen={isOpen} onClose={onClose} title="Informações do Aluno(a)">
+        <Flex flexDirection="column">
+          <Flex><Text><strong>Aluno: </strong>{imcData?.aluno}</Text></Flex>
+          <Flex><Text><strong>Profissional: </strong>{imcData?.personal}</Text></Flex>
+          <Flex><Text><strong>Data: </strong>{imcData?.data}</Text></Flex>
+          <Flex><Text><strong>IMC: </strong>{imcData?.imc}</Text></Flex>
+          <Flex><Text><strong>Classificação: </strong>{imcData?.classificacao}</Text></Flex>
+        </Flex>
+      </ModalEx>
     </Container>
   )
 }
 
-export default withAuth(Imc, [UsersTypes.ADMIN, UsersTypes.PERSONAL])
+export default withAuth(ImcCalc, [UsersTypes.ADMIN, UsersTypes.PERSONAL])

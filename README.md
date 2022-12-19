@@ -3,8 +3,10 @@
 
 ## Descrição do Projeto
 
+Projeto de Calculo do IMC, desenvolvido para o Hackathon da Pós Graduação Web Dev - UniAlfa  
 
 ## Como executar?
+
 ```
 yarn install
 ```
@@ -14,9 +16,3 @@ yarn install
 ```
 yarn start
 ```
-
-# Detalhes do Projeto
-
-
-## Demonstração do Projeto
-

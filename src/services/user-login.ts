@@ -7,8 +7,9 @@ export type LoginPayload = {
 }
 
 export type LoginResponse = {
-  data: Token | any
-  status: string | number
+  data?: Token | any
+  status?: string | number
+  error?: any;
 }
 
 export type GetMeResponse = {
@@ -22,13 +23,27 @@ export type Token = {
 }
 
 export const getMe = async (access_token: string) => {
-  const { data, status } = await api.get('me', { headers: { Authorization: `Bearer ${access_token}` } })
+  try {
+    const { data, status } = await api.get('me', { headers: { Authorization: `Bearer ${access_token}` } })
 
-  return { data, status }
+    return { data, status }
+  } catch (error) {
+    return {
+      error: error.response.data.message,
+      status: error.response.status,
+    };
+  }
 }
 
 export const loginUser = async (payload: LoginPayload): Promise<LoginResponse> => {
-  const { data, status } = await api.post('login', payload)
+  try {
+    const { data, status } = await api.post('login', payload)
 
-  return { status, data }
+    return { status, data }
+  } catch (error) {
+    return {
+      error: error.response?.data?.message,
+      status: error.response?.status,
+    };
+  }
 }

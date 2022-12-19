@@ -17,7 +17,7 @@ export type Imc = {
 
 type ImcResponse = {
   status?: number;
-  data?: Imc;
+  data?: { data: Imc };
   error?: any;
 };
 
@@ -44,10 +44,9 @@ export type ImcListResponse = {
 export const postImc = async (payload: ImcPayload): Promise<ImcResponse> => {
   try {
     const { data, status } = await api.post("calculate-imc", payload);
-    console.log({ data });
+
     return { status, data };
   } catch (error) {
-    console.log({ error: error });
 
     return {
       error: error.response.data.message,

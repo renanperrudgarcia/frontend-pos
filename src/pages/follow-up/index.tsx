@@ -1,12 +1,10 @@
-import { Box, Button, Flex, Heading, Input, Text } from "@chakra-ui/react";
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Box, Button, CircularProgress, Flex, Heading, Input, Text } from "@chakra-ui/react";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ReactToPdf from "react-to-pdf";
 import { useEffect, useRef, useState } from "react";
-import { BiSearch } from "react-icons/bi"
 import { PDFOptions, UsersTypes } from "../../utils/constants";
-import { useParams } from "react-router-dom";
-import {  User } from "../../services/users";
-import { getImcByIduser, ImcList, ImcListResponse } from "../../services/imc";
+import { User } from "../../services/users";
+import { getImcByIduser, ImcListResponse } from "../../services/imc";
 import { useAuth } from "../../Providers/auth";
 import { withAuth } from "../../utils/hoc/with-auth";
 
@@ -27,7 +25,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const FollowUp = () => {
 
-    const { user: loggedUser, signout } = useAuth()
+    const { signout } = useAuth()
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [dataImcs, setDataImcs] = useState<ImcListResponse[]>([])
@@ -41,7 +39,7 @@ const FollowUp = () => {
         const user = localStorage.getItem("user");
         const userData = JSON.parse(user);
         const data = dataInicio !== '0' ? dataInicio : '0';
-        fetchImcs(userData.id,data)
+        fetchImcs(userData.id, data)
     }
 
     const fetchImcs = async (id: number, data_avalicao: string) => {
@@ -65,14 +63,12 @@ const FollowUp = () => {
                     <Heading>
                         {user.nome}
                     </Heading>
-                    <Button mx="30px">Alterar</Button>
-                    <Button>Excluir</Button>
                 </Flex>
 
                 <Flex flex={1} justifyContent="center" >
                     <Flex alignItems="center" mr="40px">
                         <Text>Filtrar:</Text>
-                        <Input ml="8px" borderStartRadius="6px" borderEndRadius={0} border="1px solid black" type="date"  onChange={handleDataInicioChange}/>
+                        <Input ml="8px" borderStartRadius="6px" borderEndRadius={0} border="1px solid black" type="date" onChange={handleDataInicioChange} />
                     </Flex>
 
 
@@ -82,29 +78,34 @@ const FollowUp = () => {
                 </Flex>
                 <Button onClick={signout}>Sair</Button>
             </Flex>
-            <Flex h="calc(100vh - 180px)" ref={ref}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                        width={500}
-                        height={300}
-                        data={dataImcs}
-                        margin={{
-                            top: 5,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                        }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="dataAvalicao" />
-                        <YAxis dataKey="imc" />
-                        {/* @ts-ignore */}
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend />
-                        <Bar dataKey="imc" fill="#8884d8" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </Flex>
+            {isLoading ?
+                <Flex alignItems="center"  >
+                    <Text>Aguardando carregamento...</Text>
+                    <CircularProgress isIndeterminate color='blue.300' ml={10} />
+                </Flex> :
+                <Flex h="calc(100vh - 180px)" ref={ref}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                            width={500}
+                            height={300}
+                            data={dataImcs}
+                            margin={{
+                                top: 5,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                            }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="dataAvalicao" />
+                            <YAxis dataKey="imc" />
+                            {/* @ts-ignore */}
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Bar dataKey="imc" fill="#8884d8" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </Flex>}
         </Box>
     );
 }
