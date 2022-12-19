@@ -1,11 +1,13 @@
-import { Box, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Menu, MenuButton, MenuItem, MenuList, Text, useDisclosure } from '@chakra-ui/react'
+import { Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Menu, MenuButton, MenuItem, MenuList, Text, useDisclosure } from '@chakra-ui/react'
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../Providers/auth'
 
 
 export const MenuSimple = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const btnRef = useRef()
+    const btnRef = useRef()
+    const {  signout } = useAuth()
 
   return (
     <Box display="flex" justifyContent="space-between">
@@ -51,7 +53,7 @@ export const MenuSimple = (): JSX.Element => {
         </Drawer>
       </Flex>
 
-      <Link to="/login">Sair</Link>
+      <Button onClick={signout}>Sair</Button>
 
     </Box>
   )

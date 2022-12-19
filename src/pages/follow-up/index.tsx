@@ -1,12 +1,12 @@
 import { Box, Button, Flex, Heading, Input, Text } from "@chakra-ui/react";
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ReactToPdf from "react-to-pdf";
 import { useEffect, useRef, useState } from "react";
 import { BiSearch } from "react-icons/bi"
 import { PDFOptions, UsersTypes } from "../../utils/constants";
 import { useParams } from "react-router-dom";
-import { getUserById, User } from "../../services/users";
-import { getImcByIduser, ImcList } from "../../services/imc";
+import {  User } from "../../services/users";
+import { getImcByIduser, ImcList, ImcListResponse } from "../../services/imc";
 import { useAuth } from "../../Providers/auth";
 import { withAuth } from "../../utils/hoc/with-auth";
 
@@ -24,45 +24,38 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
+
 const FollowUp = () => {
-    console.log('entrou aki')
-    const { iduser } = useParams()
-    const { user: loggedUser } = useAuth()
+
+    const { user: loggedUser, signout } = useAuth()
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [dataImcs, setDataImcs] = useState<ImcList[]>([])
+    const [dataImcs, setDataImcs] = useState<ImcListResponse[]>([])
     const [user, setUser] = useState<User>({} as User)
+    const [dataInicio, setDataInicio] = useState('')
+    const handleDataInicioChange = (event) => setDataInicio(event.target.value)
 
     const ref = useRef<HTMLDivElement>(null);
 
-
-    const fetchUser = async (iduser: number) => {
-        setIsLoading(true)
-
-        const { data } = await getUserById(iduser)
-
-        setUser(data)
-        fetchImcs(iduser)
+    const fetchUser = async () => {
+        const user = localStorage.getItem("user");
+        const userData = JSON.parse(user);
+        const data = dataInicio !== '0' ? dataInicio : '0';
+        fetchImcs(userData.id,data)
     }
 
-    const fetchImcs = async (iduser: number) => {
+    const fetchImcs = async (id: number, data_avalicao: string) => {
         setIsLoading(true)
 
-        const data = await getImcByIduser(iduser)
+        const data = await getImcByIduser(id, data_avalicao)
 
         setDataImcs(data)
         setIsLoading(false)
     }
 
     useEffect(() => {
-        if (iduser && iduser !== '0') {
-            fetchUser(Number(iduser))
-            return
-        }
-
-        setUser(loggedUser)
-        fetchImcs(loggedUser.id)
-    }, [iduser])
+        fetchUser()
+    }, [dataInicio])
 
 
     return (
@@ -79,8 +72,7 @@ const FollowUp = () => {
                 <Flex flex={1} justifyContent="center" >
                     <Flex alignItems="center" mr="40px">
                         <Text>Filtrar:</Text>
-                        <Input ml="8px" borderStartRadius="6px" borderEndRadius={0} border="1px solid black" type="date" />
-                        <Button backgroundColor="white" borderStartRadius={0} borderEndRadius="6px" border="1px solid RGBA(0, 0, 0, 0.24)"><BiSearch size={30} /></Button>
+                        <Input ml="8px" borderStartRadius="6px" borderEndRadius={0} border="1px solid black" type="date"  onChange={handleDataInicioChange}/>
                     </Flex>
 
 
@@ -88,7 +80,7 @@ const FollowUp = () => {
                         {({ toPdf }) => <Button onClick={toPdf}>Imprimir</Button>}
                     </ReactToPdf>
                 </Flex>
-                <Button>Sair</Button>
+                <Button onClick={signout}>Sair</Button>
             </Flex>
             <Flex h="calc(100vh - 180px)" ref={ref}>
                 <ResponsiveContainer width="100%" height="100%">

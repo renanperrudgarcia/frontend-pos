@@ -1,7 +1,7 @@
 import { Button, CircularProgress, Container, Flex, Select, Text, useToast } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { InputForm } from '../../components/InputForm'
+import { useAuth } from '../../Providers/auth'
 import { ImcPayload, postImc } from '../../services/imc'
 import { getUserByTypeUser } from '../../services/users'
 import { UsersTypes } from '../../utils/constants'
@@ -18,6 +18,7 @@ const Imc = () => {
   const [userPersonalOptions, setUserPersonalOptions] = useState<SelectOptionsUserType[]>([])
   const [userStudentOptions, setUserStudentOptions] = useState<SelectOptionsUserType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { user: loggedUser } = useAuth()
 
   const handleInputChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
@@ -71,10 +72,10 @@ const Imc = () => {
     fetchUserStudent()
     fetchUserByTypeUserPersonal()
   }, [])
-
+  console.log(loggedUser)
   return (
     <Container mt={50}>
-      <Text mb="10" fontSize={40} color="yellow.500">Calcular IMC </Text>
+      <Text mb="10" fontSize={40} color="purple">Calcular IMC </Text>
 
       {isLoading ?
         <Flex alignItems="center"  >
@@ -126,7 +127,7 @@ const Imc = () => {
 
           <Text fontSize={16} mt={4} mb={4}>Profissional *</Text>
           <Select
-            placeholder="Selecione o Profissional"
+            placeholder={loggedUser.tipo_usuario === UsersTypes.PERSONAL ? loggedUser.nome : "Selecione o Profissional"}
             errorBorderColor="O profissional é obrigatório"
             boxShadow='base'
             rounded='md'
@@ -134,7 +135,9 @@ const Imc = () => {
             isRequired
             name="id_professional"
             onChange={handleInputChange}
-            value={formValues.id_professional || ''}
+            value={(formValues.id_professional || '')}
+            // isDisabled={loggedUser.tipo_usuario === UsersTypes.PERSONAL}
+            defaultValue={loggedUser.id}
           >
             {userPersonalOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -148,7 +151,7 @@ const Imc = () => {
             <Text onClick={() => window?.history?.back()} cursor="pointer">
               Voltar
             </Text>
-            <Button mt={4} onClick={handleSubmit} width={40} backgroundColor="yellow.500"> Calcular </Button>
+            <Button mt={4} onClick={handleSubmit} width={40} backgroundColor="purple.300"> Calcular </Button>
           </Flex>
         </>
       }
